@@ -4,7 +4,7 @@ import { AsyncPaginate } from "react-select-async-paginate";
 import { CSSObject } from 'styled-components';
 
 
-const InfiniteScrollSelect = ({ loadOptions, value, onChange }) => {
+const InfiniteScrollSelect = ({ loadOptions, value, onChange, placeHolder }) => {
 
 
     // ShadCN-like styles for react-select
@@ -66,7 +66,7 @@ const InfiniteScrollSelect = ({ loadOptions, value, onChange }) => {
             additional={{
                 page: 1,
             }}
-            placeholder="Search for options..."
+            placeholder={placeHolder || "Search for options..."}
         />
 
     );

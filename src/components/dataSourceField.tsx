@@ -17,12 +17,12 @@ const DataSourceField: React.FC<DataSourceFieldProps> = ({ onChange, value }) =>
         try {
             const response = await axios.get(`http://localhost:4000/api/fred/series/search`, {
                 params: {
-                    search_text: search || "", // Fallback for empty search
+                    search_text: search || "economy", // Fallback for empty search
                     api_key: FRED_API_KEY,
                     file_type: "json",
                     limit: 20, // Fetch 20 results at a time
                     offset: loadedOptions.length,
-                },
+                }
             });
 
             const options = response?.data?.seriess?.map((item: any) => ({
@@ -50,7 +50,7 @@ const DataSourceField: React.FC<DataSourceFieldProps> = ({ onChange, value }) =>
 
 
     return (
-        <InfiniteScrollSelect loadOptions={loadOptions} onChange={onChange} value={value} />
+        <InfiniteScrollSelect loadOptions={loadOptions} onChange={onChange} value={value} placeHolder={"Search data source..."} />
     );
 };
 
