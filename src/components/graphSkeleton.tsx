@@ -1,14 +1,14 @@
 
-import { Card, CardHeader, CardContent } from "@/components/ui/card";
+import { Card, CardHeader, CardContent, CardFooter } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 
 const GraphSkeleton = () => {
     return (
         <Card className="relative">
             {/* Header Skeleton */}
-            <CardHeader className="flex justify-between items-center pb-4">
+            <CardHeader className="flex flex-row justify-between items-center pb-4">
                 {/* Title Skeleton */}
-                <Skeleton className="h-6 w-32" />
+                <Skeleton className="h-6 w-16" />
 
                 {/* Tabs and Buttons Skeleton */}
                 <div className="flex items-center space-x-4">
@@ -25,6 +25,11 @@ const GraphSkeleton = () => {
                     <Skeleton className="w-full h-full" />
                 </div>
             </CardContent>
+            <CardFooter className="flex-col items-center gap-2 text-sm">
+
+                <Skeleton className="h-6 w-36" />
+
+            </CardFooter>
         </Card>
     );
 };

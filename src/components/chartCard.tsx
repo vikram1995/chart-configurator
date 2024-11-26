@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
-import { Card, CardHeader, CardContent, CardFooter } from "@/components/ui/card";
+import { Card, CardContent, CardFooter } from "@/components/ui/card";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator"
@@ -25,7 +25,6 @@ interface ChartProps {
     chart: ChartT
 }
 const ChartCard: React.FC<ChartProps> = ({ chart }) => {
-
     const { title, type, yLabel, timeFrequency, lineStyle, dataSource, color, barStyle, id } = chart
     const [chartData, setChartData] = useState([])
     const [isLoading, setIsLoading] = useState(true);
@@ -60,7 +59,6 @@ const ChartCard: React.FC<ChartProps> = ({ chart }) => {
     const onDelete = async () => {
         try {
             const response = await axios.delete(API_ENDPOINTS.charts.update(id));
-            console.log("response", response)
             setChartList(response?.data?.charts)
         } catch (error) {
             console.error("Error deleting chart:", error);
@@ -78,9 +76,6 @@ const ChartCard: React.FC<ChartProps> = ({ chart }) => {
                     "Content-Type": "application/json",
                 },
             });
-
-            // Log the response from the backend
-            console.log("Chart saved successfully:", response.data);
             setChartList(response?.data?.charts)
             // Optionally update UI or state here
             alert("Chart saved successfully!");
@@ -105,8 +100,6 @@ const ChartCard: React.FC<ChartProps> = ({ chart }) => {
 
                 }
             })
-            console.log("response", response)
-
             const observations = response?.data?.observations
             setChartData(observations)
         } catch (error) {
@@ -133,61 +126,61 @@ const ChartCard: React.FC<ChartProps> = ({ chart }) => {
 
     return (
         <>
-            <Card className="relative">
+            <Card>
                 {/* Header with Title, Tabs, and Actions */}
                 {isLoading ? <GraphSkeleton /> : <>
-                    <CardHeader className="flex  flex-row justify-between items-center p-2">
+                    <div className="flex flex-row items-center w-full justify-between p-2">
 
                         {/* Tabs and Icon Buttons */}
-                        <div className="flex items-center space-x-4">
-                            {/* Chart Type Tabs */}
-                            <Tabs
-                                value={chartType}
-                                onValueChange={handleChartTypeChange}
-                                className="flex space-x-2"
+
+                        {/* Chart Type Tabs */}
+                        <Tabs
+                            value={chartType}
+                            onValueChange={handleChartTypeChange}
+                            className="hidden xxs:flex"
+                        >
+                            <TabsList>
+                                <TabsTrigger value="line"><ChartLine size={16} /></TabsTrigger>
+                                <TabsTrigger value="bar"> <ChartColumnBig size={16} /></TabsTrigger>
+                            </TabsList>
+                        </Tabs>
+                        {/* Time Range Tabs */}
+                        <Tabs
+                            defaultValue={frequency}
+                            onValueChange={handleTimeRangeChange}
+                            className="flex"
+                        >
+                            <TabsList>
+                                <TabsTrigger value="1d">1D</TabsTrigger>
+                                <TabsTrigger value="1w">1W</TabsTrigger>
+                                <TabsTrigger value="1m">1M</TabsTrigger>
+                                <TabsTrigger value="1y">1Y</TabsTrigger>
+                            </TabsList>
+                        </Tabs>
+
+                        {/* Edit and Delete Icon Buttons */}
+                        <div className="flex gap-2">
+                            <Button
+                                size="icon"
+                                variant="outline"
+                                onClick={onEditClickHandler}
+
                             >
-                                <TabsList>
-                                    <TabsTrigger value="line"><ChartLine size={16} /></TabsTrigger>
-                                    <TabsTrigger value="bar"> <ChartColumnBig size={16} /></TabsTrigger>
-                                </TabsList>
-                            </Tabs>
-                            {/* Time Range Tabs */}
-                            <Tabs
-                                defaultValue={frequency}
-                                onValueChange={handleTimeRangeChange}
-                                className="flex space-x-2"
+                                <Pencil size={16} />
+                                <span className="sr-only">Edit</span> {/* Accessible label */}
+                            </Button>
+                            <Button
+                                size="icon"
+                                variant="destructive"
+                                onClick={onDelete}
+
                             >
-                                <TabsList>
-                                    <TabsTrigger value="1d">1D</TabsTrigger>
-                                    <TabsTrigger value="1w">1W</TabsTrigger>
-                                    <TabsTrigger value="1m">1M</TabsTrigger>
-                                    <TabsTrigger value="1y">1Y</TabsTrigger>
-                                </TabsList>
-                            </Tabs>
-
-                            {/* Edit and Delete Icon Buttons */}
-                            <div className="flex space-x-2">
-                                <Button
-                                    size="icon"
-                                    variant="outline"
-                                    onClick={onEditClickHandler}
-
-                                >
-                                    <Pencil size={16} />
-                                    <span className="sr-only">Edit</span> {/* Accessible label */}
-                                </Button>
-                                <Button
-                                    size="icon"
-                                    variant="destructive"
-                                    onClick={onDelete}
-
-                                >
-                                    <Trash size={16} />
-                                    <span className="sr-only">Delete</span> {/* Accessible label */}
-                                </Button>
-                            </div>
+                                <Trash size={16} />
+                                <span className="sr-only">Delete</span> {/* Accessible label */}
+                            </Button>
                         </div>
-                    </CardHeader>
+
+                    </div>
                     <Separator />
                     {/* Chart Content */}
                     <CardContent className="p-2">
@@ -250,11 +243,9 @@ const ChartCard: React.FC<ChartProps> = ({ chart }) => {
 
                         </ChartContainer>
                     </CardContent>
-                    <CardFooter className="flex-col items-start gap-2 text-sm">
+                    <CardFooter className="flex-col items-center gap-2 text-sm">
+                        <h4> {title}</h4>
 
-                        <div className="leading-none text-muted-foreground">
-                            {title}
-                        </div>
                     </CardFooter>
                 </>}
 

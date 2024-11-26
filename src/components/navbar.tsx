@@ -4,9 +4,12 @@ import { useState } from "react";
 import axios from "axios";
 import API_ENDPOINTS from "@/config/urlConfig";
 import { Button } from "./ui/button";
+import { useChartStore } from "@/stores";
+import { Plus } from 'lucide-react';
 
 const Navbar = () => {
     const [isFormOpen, setIsFormOpen] = useState(false);
+    const { setChartList } = useChartStore()
     const saveChart = async (chart: ChartConfig) => {
         try {
             // Make a POST request to the backend
@@ -15,10 +18,7 @@ const Navbar = () => {
                     "Content-Type": "application/json",
                 },
             });
-
-            // Log the response from the backend
-            console.log("Chart saved successfully:", response.data);
-
+            setChartList(response?.data?.charts)
             // Optionally update UI or state here
             alert("Chart saved successfully!");
         } catch (error: any) {
@@ -40,7 +40,7 @@ const Navbar = () => {
                         <span className="ml-2 text-xl font-semibold">Dashboard</span>
                     </div>
                     {/* Add Button */}
-                    <Button onClick={openDialog}>Add Chart</Button>
+                    <Button onClick={openDialog}><Plus />Add Chart</Button>
                     <ChartConfigDialog onSubmit={saveChart} isFormOpen={isFormOpen} setIsFormOpen={setIsFormOpen} defaultValues={null} />
                 </div>
             </nav>
