@@ -3,16 +3,15 @@ import axios from "axios";
 import { Card, CardContent, CardFooter } from "@/components/ui/card";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
-import { Separator } from "@/components/ui/separator"
-import { Pencil, Trash, ChartColumnBig, ChartLine } from "lucide-react"; // Icons from ShadCN
+import { Separator } from "@/components/ui/separator";
+import { Pencil, Trash, ChartColumnBig, ChartLine } from "lucide-react";
 import { LineChart, BarChart, Bar, Line, XAxis, YAxis, CartesianGrid } from "recharts";
 import {
-    ChartConfig,
     ChartContainer,
     ChartTooltip,
     ChartTooltipContent,
-} from "@/components/ui/chart"
-import { ChartConfig as ChartT } from '@/chartConfigSchema'
+} from "@/components/ui/chart";
+import { ChartConfig as ChartT } from '@/chartConfigSchema';
 import API_ENDPOINTS from "@/config/urlConfig";
 import GraphSkeleton from "./graphSkeleton";
 import { calculateDateRange } from "@/lib/utils";
@@ -21,26 +20,27 @@ import { useChartStore } from "@/stores";
 
 const FRED_API_KEY = import.meta.env.VITE_FRED_API_KEY;
 
-interface ChartProps {
-    chart: ChartT
+interface ChartDisplayCardProps {
+    chart: ChartT;
 }
-const ChartCard: React.FC<ChartProps> = ({ chart }) => {
-    const { title, type, yLabel, timeFrequency, lineStyle, dataSource, color, barStyle, id } = chart
-    const [chartData, setChartData] = useState([])
-    const [isLoading, setIsLoading] = useState(true);
 
-    const [frequency, setFrequency] = React.useState(timeFrequency || "1m"); // Default time range
-    const [chartType, setChartType] = React.useState(type || "line"); // Default chart type
+const ChartDisplayCard: React.FC<ChartDisplayCardProps> = ({ chart }) => {
+    const { title, type, yLabel, timeFrequency, lineStyle, dataSource, color, barStyle, id } = chart;
+    const [chartData, setChartData] = useState<any[]>([]);
+    const [isLoading, setIsLoading] = useState<boolean>(true);
 
-    const [isFormOpen, setIsFormOpen] = useState(false);
+    const [frequency, setFrequency] = useState<string>(timeFrequency || "1m");
+    const [chartType, setChartType] = useState<string>(type || "line");
 
-    const { setChartList } = useChartStore()
+    const [isFormOpen, setIsFormOpen] = useState<boolean>(false);
+
+    const { setChartList } = useChartStore();
 
     const strokeDasharray = lineStyle === "dashed"
         ? "5 5"
         : lineStyle === "dotted"
             ? "2 2"
-            : undefined
+            : undefined;
 
     const barSize =
         barStyle === "thin"
@@ -49,43 +49,40 @@ const ChartCard: React.FC<ChartProps> = ({ chart }) => {
                 ? 20
                 : barStyle === "thick"
                     ? 30
-                    : 20 // Default to medium
+                    : 20;
 
-    const handleChartTypeChange = (type) => {
-        setChartType(type); // Update chart type when tab is switched
+    const handleChartTypeChange = (type: string) => {
+        setChartType(type);
     };
-
 
     const onDelete = async () => {
         try {
             const response = await axios.delete(API_ENDPOINTS.charts.update(id));
-            setChartList(response?.data?.charts)
+            setChartList(response?.data?.charts);
         } catch (error) {
             console.error("Error deleting chart:", error);
         }
-    }
-    const onEditClickHandler = () => {
-        setIsFormOpen(true)
-    }
+    };
 
-    const editChart = async (chart) => {
+    const onEditClickHandler = () => {
+        setIsFormOpen(true);
+    };
+
+    const editChart = async (chart: ChartT) => {
         try {
-            // Make a POST request to the backend
             const response = await axios.put(API_ENDPOINTS.charts.update(id), chart, {
                 headers: {
                     "Content-Type": "application/json",
                 },
             });
-            setChartList(response?.data?.charts)
-            // Optionally update UI or state here
+            setChartList(response?.data?.charts);
             alert("Chart saved successfully!");
         } catch (error: any) {
-            // Handle errors gracefully
             console.error("Error saving chart:", error.response?.data || error.message);
             alert("Failed to save chart. Please try again.");
         }
         setIsFormOpen(false);
-    }
+    };
 
     const getChartData = async () => {
         const { startDate, endDate } = calculateDateRange(frequency);
@@ -97,43 +94,36 @@ const ChartCard: React.FC<ChartProps> = ({ chart }) => {
                     observation_start: startDate,
                     observation_end: endDate,
                     file_type: "json"
-
                 }
-            })
-            const observations = response?.data?.observations
-            setChartData(observations)
+            });
+            const observations = response?.data?.observations;
+            setChartData(observations);
         } catch (error) {
-
+            console.error("Error fetching chart data:", error);
         }
         setIsLoading(false);
-    }
+    };
 
     useEffect(() => {
-        getChartData()
-    }, [frequency])
+        getChartData();
+    }, [frequency]);
 
     const chartConfig = {
         value: {
             label: "value",
             color: color
         },
-    } satisfies ChartConfig
+    };
 
-
-    const handleTimeRangeChange = (range) => {
+    const handleTimeRangeChange = (range: string) => {
         setFrequency(range);
     };
 
     return (
         <>
             <Card>
-                {/* Header with Title, Tabs, and Actions */}
                 {isLoading ? <GraphSkeleton /> : <>
                     <div className="flex flex-row items-center w-full justify-between p-2">
-
-                        {/* Tabs and Icon Buttons */}
-
-                        {/* Chart Type Tabs */}
                         <Tabs
                             value={chartType}
                             onValueChange={handleChartTypeChange}
@@ -141,10 +131,9 @@ const ChartCard: React.FC<ChartProps> = ({ chart }) => {
                         >
                             <TabsList>
                                 <TabsTrigger value="line"><ChartLine size={16} /></TabsTrigger>
-                                <TabsTrigger value="bar"> <ChartColumnBig size={16} /></TabsTrigger>
+                                <TabsTrigger value="bar"><ChartColumnBig size={16} /></TabsTrigger>
                             </TabsList>
                         </Tabs>
-                        {/* Time Range Tabs */}
                         <Tabs
                             defaultValue={frequency}
                             onValueChange={handleTimeRangeChange}
@@ -157,75 +146,70 @@ const ChartCard: React.FC<ChartProps> = ({ chart }) => {
                                 <TabsTrigger value="1y">1Y</TabsTrigger>
                             </TabsList>
                         </Tabs>
-
-                        {/* Edit and Delete Icon Buttons */}
                         <div className="flex gap-2">
                             <Button
                                 size="icon"
                                 variant="outline"
                                 onClick={onEditClickHandler}
-
                             >
                                 <Pencil size={16} />
-                                <span className="sr-only">Edit</span> {/* Accessible label */}
+                                <span className="sr-only">Edit</span>
                             </Button>
                             <Button
                                 size="icon"
                                 variant="destructive"
                                 onClick={onDelete}
-
                             >
                                 <Trash size={16} />
-                                <span className="sr-only">Delete</span> {/* Accessible label */}
+                                <span className="sr-only">Delete</span>
                             </Button>
                         </div>
-
                     </div>
                     <Separator />
-                    {/* Chart Content */}
                     <CardContent className="p-2">
                         <ChartContainer config={chartConfig}>
-                            {chartType === 'line' ? <LineChart
-                                accessibilityLayer
-                                data={chartData}
-                                margin={{
-                                    left: 12,
-                                    right: 12,
-                                }}
-                            >
-                                <CartesianGrid vertical={false} />
-                                <XAxis
-                                    dataKey="date"
-                                    tickLine={false}
-                                    axisLine={false}
-                                    tickMargin={8}
-                                //tickFormatter={(value) => value.slice(0, 3)}
-                                />
-                                <YAxis
-                                    label={{
-                                        value: yLabel,
-                                        angle: -90,
-                                        position: "insideLeft",
+                            {chartType === 'line' ? (
+                                <LineChart
+                                    accessibilityLayer
+                                    data={chartData}
+                                    margin={{
+                                        left: 12,
+                                        right: 12,
                                     }}
-                                />
-                                <ChartTooltip
-                                    cursor={false}
-                                    content={<ChartTooltipContent hideLabel />}
-                                />
-                                <Line
-                                    dataKey="value"
-                                    type="natural"
-                                    stroke="var(--color-value)"
-                                    strokeDasharray={strokeDasharray}
-                                    strokeWidth={2}
-                                    dot={{
-                                        fill: "var(--color-value)",
-                                    }}
-                                    activeDot={{
-                                        r: 6,
-                                    }}
-                                />
-                            </LineChart> :
+                                >
+                                    <CartesianGrid vertical={false} />
+                                    <XAxis
+                                        dataKey="date"
+                                        tickLine={false}
+                                        axisLine={false}
+                                        tickMargin={8}
+                                    />
+                                    <YAxis
+                                        label={{
+                                            value: yLabel,
+                                            angle: -90,
+                                            position: "insideLeft",
+                                        }}
+                                    />
+                                    <ChartTooltip
+                                        cursor={false}
+                                        content={<ChartTooltipContent hideLabel />}
+                                    />
+                                    <Line
+                                        dataKey="value"
+                                        type="natural"
+                                        stroke="var(--color-value)"
+                                        strokeDasharray={strokeDasharray}
+                                        strokeWidth={2}
+                                        dot={{
+                                            fill: "var(--color-value)",
+                                        }}
+                                        activeDot={{
+                                            r: 6,
+                                        }}
+                                    />
+                                </LineChart>
+                            ) : (
                                 <BarChart accessibilityLayer data={chartData}>
                                     <CartesianGrid vertical={false} />
                                     <XAxis
@@ -239,20 +223,18 @@ const ChartCard: React.FC<ChartProps> = ({ chart }) => {
                                         content={<ChartTooltipContent hideLabel />}
                                     />
                                     <Bar dataKey="value" fill="var(--color-value)" radius={8} barSize={barSize} />
-                                </BarChart>}
-
+                                </BarChart>
+                            )}
                         </ChartContainer>
                     </CardContent>
                     <CardFooter className="flex-col items-center gap-2 text-sm">
-                        <h4> {title}</h4>
-
+                        <h4>{title}</h4>
                     </CardFooter>
                 </>}
-
             </Card>
             <ChartConfigDialog onSubmit={editChart} isFormOpen={isFormOpen} setIsFormOpen={setIsFormOpen} defaultValues={chart} />
         </>
     );
 };
 
-export default ChartCard;
+export default ChartDisplayCard;

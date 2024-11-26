@@ -2,14 +2,14 @@ import Navbar from './components/navbar'
 
 import './App.css'
 
-import ChartsPlot from './components/chartsPlot'
+import ChartGrid from './components/ChartGrid'
 
 function App() {
 
   return (
     <>
       <Navbar />
-      <ChartsPlot />
+      <ChartGrid />
     </>
   )
 }
