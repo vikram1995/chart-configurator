@@ -49,7 +49,6 @@ const DataSourceField: React.FC<DataSourceFieldProps> = ({ onChange, value }) =>
         }
     };
 
-
     return (
         <InfiniteScrollSelect loadOptions={loadOptions} onChange={onChange} value={value} placeHolder={"Search data source..."} />
     );

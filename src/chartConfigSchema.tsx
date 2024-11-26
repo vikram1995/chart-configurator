@@ -13,6 +13,7 @@ const dataSource = z
 const chartType = z.enum(["line", "bar"])
 
 export const chartConfigSchema = z.object({
+    id: z.string().optional(),
     title: z.string().min(1, "Title is required"),
     type: chartType,
     yLabel: z.string().optional(),
