@@ -1,5 +1,7 @@
 import { useMediaQuery } from 'usehooks-ts'
 import { useState } from 'react'
+import axios from "axios";
+
 import { Button } from "@/components/ui/button"
 import {
     Dialog,
@@ -21,6 +23,7 @@ import {
 import ChartConfigForm from "./chartConfigForm"
 import { ChartConfig } from '@/chartConfigSchema'
 import { Breakpoints } from '@/constants'
+import API_ENDPOINTS from '@/config/urlConfig';
 
 
 export function ChartConfigDialog() {
@@ -29,14 +32,25 @@ export function ChartConfigDialog() {
     const [editingChart, setEditingChart] = useState<ChartConfig | null>(null);
     const isDesktop = useMediaQuery(Breakpoints.Desktop)
 
-    const saveChart = (chart: ChartConfig) => {
+    const saveChart = async (chart: ChartConfig) => {
         console.log(chart)
-        if (chart.title && editingChart) {
-            // Edit existing chart
-            setCharts((prev) => prev.map((c) => (c.title === editingChart.title ? chart : c)));
-        } else {
-            // Add new chart
-            setCharts((prev) => [...prev, { ...chart, id: Date.now() }]);
+        try {
+            // Make a POST request to the backend
+            const response = await axios.post(API_ENDPOINTS.charts.create, chart, {
+                headers: {
+                    "Content-Type": "application/json",
+                },
+            });
+
+            // Log the response from the backend
+            console.log("Chart saved successfully:", response.data);
+
+            // Optionally update UI or state here
+            alert("Chart saved successfully!");
+        } catch (error: any) {
+            // Handle errors gracefully
+            console.error("Error saving chart:", error.response?.data || error.message);
+            alert("Failed to save chart. Please try again.");
         }
         setIsFormOpen(false);
     };

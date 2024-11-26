@@ -1,11 +1,23 @@
 import React from "react";
-import { useForm } from 'react-hook-form';
+import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { chartConfigSchema, ChartConfig } from "@/chartConfigSchema";
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
+import {
+    Form,
+    FormControl,
+    FormField,
+    FormItem,
+    FormLabel,
+    FormMessage,
+} from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Select, SelectContent, SelectItem, SelectTrigger } from "@/components/ui/select";
+import {
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+} from "@/components/ui/select";
 import DataSourceField from "./dataSourceField";
 
 interface ChartConfigFormProps {
@@ -13,7 +25,10 @@ interface ChartConfigFormProps {
     onSubmit: (data: ChartConfig) => void;
 }
 
-const ChartConfigForm: React.FC<ChartConfigFormProps> = ({ defaultValues, onSubmit }) => {
+const ChartConfigForm: React.FC<ChartConfigFormProps> = ({
+    defaultValues,
+    onSubmit,
+}) => {
     const form = useForm<ChartConfig>({
         resolver: zodResolver(chartConfigSchema),
         defaultValues: {
@@ -21,7 +36,10 @@ const ChartConfigForm: React.FC<ChartConfigFormProps> = ({ defaultValues, onSubm
             type: defaultValues?.type || "line",
             yLabel: defaultValues?.yLabel || "",
             color: defaultValues?.color || "#4b8dff",
-            dataSource: defaultValues?.dataSource || null
+            dataSource: defaultValues?.dataSource || null,
+            timeFrequency: defaultValues?.timeFrequency || "1m",
+            lineStyle: defaultValues?.lineStyle || "solid",
+            barStyle: defaultValues?.barStyle || "medium",
         },
     });
 
@@ -29,9 +47,14 @@ const ChartConfigForm: React.FC<ChartConfigFormProps> = ({ defaultValues, onSubm
         onSubmit(data);
     };
 
+    const chartType = form.watch("type");
+
     return (
         <Form {...form}>
-            <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-4">
+            <form
+                onSubmit={form.handleSubmit(handleSubmit)}
+                className="space-y-2"
+            >
                 {/* Title */}
                 <FormField
                     name="title"
@@ -47,6 +70,7 @@ const ChartConfigForm: React.FC<ChartConfigFormProps> = ({ defaultValues, onSubm
                     )}
                 />
 
+                {/* Data Source */}
                 <FormField
                     name="dataSource"
                     control={form.control}
@@ -54,7 +78,10 @@ const ChartConfigForm: React.FC<ChartConfigFormProps> = ({ defaultValues, onSubm
                         <FormItem>
                             <FormLabel>Data Source</FormLabel>
                             <FormControl>
-                                <DataSourceField value={field.value} onChange={field.onChange} />
+                                <DataSourceField
+                                    value={field.value}
+                                    onChange={field.onChange}
+                                />
                             </FormControl>
                             <FormMessage />
                         </FormItem>
@@ -71,7 +98,9 @@ const ChartConfigForm: React.FC<ChartConfigFormProps> = ({ defaultValues, onSubm
                             <FormControl>
                                 <Select
                                     value={field.value}
-                                    onValueChange={(value) => field.onChange(value as "line" | "bar")}
+                                    onValueChange={(value) =>
+                                        field.onChange(value as "line" | "bar")
+                                    }
                                 >
                                     <SelectTrigger>{field.value}</SelectTrigger>
                                     <SelectContent>
@@ -85,6 +114,90 @@ const ChartConfigForm: React.FC<ChartConfigFormProps> = ({ defaultValues, onSubm
                     )}
                 />
 
+
+                {/* Line Style Field - Conditional Rendering */}
+                {chartType === "line" && (
+                    <FormField
+                        name="lineStyle"
+                        control={form.control}
+                        render={({ field }) => (
+                            <FormItem>
+                                <FormLabel>Line Style</FormLabel>
+                                <FormControl>
+                                    <Select
+                                        value={field.value}
+                                        onValueChange={(value) => field.onChange(value)}
+                                    >
+                                        <SelectTrigger>{field.value || "Select Line Style"}</SelectTrigger>
+                                        <SelectContent>
+                                            <SelectItem value="solid">Solid</SelectItem>
+                                            <SelectItem value="dashed">Dashed</SelectItem>
+                                            <SelectItem value="dotted">Dotted</SelectItem>
+                                        </SelectContent>
+                                    </Select>
+                                </FormControl>
+                                <FormMessage />
+                            </FormItem>
+                        )}
+                    />
+                )}
+
+                {/* Bar Style Field - Conditional Rendering */}
+                {chartType === "bar" && (
+                    <FormField
+                        name="barStyle"
+                        control={form.control}
+                        render={({ field }) => (
+                            <FormItem>
+                                <FormLabel>Bar Style</FormLabel>
+                                <FormControl>
+                                    <Select
+                                        value={field.value}
+                                        onValueChange={(value) => field.onChange(value)}
+                                    >
+                                        <SelectTrigger>{field.value || "Select Bar Style"}</SelectTrigger>
+                                        <SelectContent>
+                                            <SelectItem value="thin">Thin</SelectItem>
+                                            <SelectItem value="medium">Medium</SelectItem>
+                                            <SelectItem value="thick">Thick</SelectItem>
+                                        </SelectContent>
+                                    </Select>
+                                </FormControl>
+                                <FormMessage />
+                            </FormItem>
+                        )}
+                    />
+                )}
+
+                {/* Time Frequency */}
+                <FormField
+                    name="timeFrequency"
+                    control={form.control}
+                    render={({ field }) => (
+                        <FormItem>
+                            <FormLabel>Time Frequency</FormLabel>
+                            <FormControl>
+                                <Select
+                                    value={field.value}
+                                    onValueChange={(value) =>
+                                        field.onChange(
+                                            value as "1d" | "1w" | "1m" | "1y"
+                                        )
+                                    }
+                                >
+                                    <SelectTrigger>{field.value}</SelectTrigger>
+                                    <SelectContent>
+                                        <SelectItem value="1d">Day</SelectItem>
+                                        <SelectItem value="1w">Week</SelectItem>
+                                        <SelectItem value="1m">Month</SelectItem>
+                                        <SelectItem value="1y">Year</SelectItem>
+                                    </SelectContent>
+                                </Select>
+                            </FormControl>
+                            <FormMessage />
+                        </FormItem>
+                    )}
+                />
                 {/* Y-Axis Label */}
                 <FormField
                     name="yLabel"
@@ -115,10 +228,10 @@ const ChartConfigForm: React.FC<ChartConfigFormProps> = ({ defaultValues, onSubm
                     )}
                 />
 
-                {/* Buttons */}
-
-                <Button type="submit" className="w-full">Save</Button>
-
+                {/* Save Button */}
+                <Button type="submit" className="w-full">
+                    Save
+                </Button>
             </form>
         </Form>
     );

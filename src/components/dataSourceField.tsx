@@ -3,6 +3,7 @@ import axios from "axios";
 
 import InfiniteScrollSelect from "./ui/infiniteScrollSelect";
 import { dataSourceT } from "@/chartConfigSchema";
+import API_ENDPOINTS from "@/config/urlConfig";
 const FRED_API_KEY = import.meta.env.VITE_FRED_API_KEY;
 
 
@@ -15,7 +16,7 @@ const DataSourceField: React.FC<DataSourceFieldProps> = ({ onChange, value }) =>
 
     const loadOptions = async (search: string, loadedOptions: any[]) => {
         try {
-            const response = await axios.get(`http://localhost:4000/api/fred/series/search`, {
+            const response = await axios.get(API_ENDPOINTS.dataSource.search, {
                 params: {
                     search_text: search || "economy", // Fallback for empty search
                     api_key: FRED_API_KEY,
