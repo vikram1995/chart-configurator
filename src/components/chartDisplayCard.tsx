@@ -4,7 +4,7 @@ import { Card, CardContent, CardFooter } from "@/components/ui/card";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
-import { Pencil, Trash, ChartColumnBig, ChartLine } from "lucide-react";
+import { Pencil, Trash, ChartColumnBig, ChartLine, RotateCw } from "lucide-react";
 import { LineChart, BarChart, Bar, Line, XAxis, YAxis, CartesianGrid } from "recharts";
 import {
     ChartContainer,
@@ -13,11 +13,17 @@ import {
 } from "@/components/ui/chart";
 import { ChartConfig } from "@/chartConfigSchema";
 import API_ENDPOINTS from "@/config/urlConfig";
-import GraphSkeleton from "./graphSkeleton";
 import { calculateDateRange } from "@/lib/utils";
 import { ChartConfigDialog } from "./chartConfigDialog";
 import { useChartStore } from "@/stores";
 import { useToast } from "@/hooks/use-toast";
+import { Skeleton } from "./ui/skeleton";
+import {
+    Tooltip,
+    TooltipContent,
+    TooltipProvider,
+    TooltipTrigger,
+} from "@/components/ui/tooltip"
 
 const FRED_API_KEY = import.meta.env.VITE_FRED_API_KEY;
 
@@ -31,6 +37,7 @@ const ChartDisplayCard: React.FC<ChartDisplayCardProps> = ({ chart }) => {
     const { toast } = useToast()
     const [chartData, setChartData] = useState<any[]>([]);
     const [isLoading, setIsLoading] = useState<boolean>(true);
+    const [isFailedToLoadData, setIsFailedToLoadData] = useState<boolean>(true);
     const [error, setError] = useState<string | null>(null);
     const [frequency, setFrequency] = useState<string>(timeFrequency || "1m");
     const [chartType, setChartType] = useState<string>(type || "line");
@@ -109,13 +116,14 @@ const ChartDisplayCard: React.FC<ChartDisplayCardProps> = ({ chart }) => {
 
             const observations = response?.data?.observations || [];
             setChartData(observations);
-
+            setIsFailedToLoadData(false)
             if (observations.length === 0) {
-                setError("No data available for the selected range.");
+                setError("No data available.");
             }
         } catch (err) {
             console.error("Error fetching chart data:", err);
             setError("Failed to load chart data. Please try again.");
+            setIsFailedToLoadData(true)
         } finally {
             setIsLoading(false);
         }
@@ -124,6 +132,10 @@ const ChartDisplayCard: React.FC<ChartDisplayCardProps> = ({ chart }) => {
     const handleTimeRangeChange = (range: string) => {
         setFrequency(range);
     };
+
+    const handleRetry = () => {
+        getChartData()
+    }
 
     useEffect(() => {
         getChartData();
@@ -141,48 +153,65 @@ const ChartDisplayCard: React.FC<ChartDisplayCardProps> = ({ chart }) => {
     return (
         <>
             <Card>
-                {isLoading ? (
-                    <GraphSkeleton />
-                ) : error ? (
-                    <div className="p-4 text-center text-red-600">{error}</div>
-                ) : (
-                    <>
-                        <div className="flex flex-row items-center w-full justify-between p-2">
-                            {/* Chart Type Tabs */}
-                            <Tabs value={chartType} onValueChange={handleChartTypeChange} className="hidden xxs:flex">
-                                <TabsList>
-                                    <TabsTrigger value="line"><ChartLine size={16} /></TabsTrigger>
-                                    <TabsTrigger value="bar"><ChartColumnBig size={16} /></TabsTrigger>
-                                </TabsList>
-                            </Tabs>
 
-                            {/* Time Frequency Tabs */}
-                            <Tabs defaultValue={frequency} onValueChange={handleTimeRangeChange} className="flex">
-                                <TabsList>
-                                    <TabsTrigger value="1d">1D</TabsTrigger>
-                                    <TabsTrigger value="1w">1W</TabsTrigger>
-                                    <TabsTrigger value="1m">1M</TabsTrigger>
-                                    <TabsTrigger value="1y">1Y</TabsTrigger>
-                                </TabsList>
-                            </Tabs>
+                <>
+                    <div className="flex flex-row items-center w-full justify-between p-2">
+                        {/* Chart Type Tabs */}
+                        <Tabs value={chartType} onValueChange={handleChartTypeChange} className="hidden xxs:flex">
+                            <TabsList>
+                                <TabsTrigger value="line"><ChartLine size={16} /></TabsTrigger>
+                                <TabsTrigger value="bar"><ChartColumnBig size={16} /></TabsTrigger>
+                            </TabsList>
+                        </Tabs>
 
-                            {/* Edit and Delete Buttons */}
-                            <div className="flex gap-2">
-                                <Button size="icon" variant="outline" onClick={onEditClickHandler}>
-                                    <Pencil size={16} />
-                                    <span className="sr-only">Edit</span>
-                                </Button>
-                                <Button size="icon" variant="destructive" onClick={onDelete}>
-                                    <Trash size={16} />
-                                    <span className="sr-only">Delete</span>
-                                </Button>
-                            </div>
+                        {/* Time Frequency Tabs */}
+                        <Tabs defaultValue={frequency} onValueChange={handleTimeRangeChange} className="flex">
+                            <TabsList>
+                                <TabsTrigger value="1d">1D</TabsTrigger>
+                                <TabsTrigger value="1w">1W</TabsTrigger>
+                                <TabsTrigger value="1m">1M</TabsTrigger>
+                                <TabsTrigger value="1y">1Y</TabsTrigger>
+                            </TabsList>
+                        </Tabs>
+
+                        {/* Edit and Delete Buttons */}
+                        <div className="flex gap-2">
+                            <Button size="icon" variant="outline" onClick={onEditClickHandler}>
+                                <Pencil size={16} />
+                                <span className="sr-only">Edit</span>
+                            </Button>
+                            <Button size="icon" variant="destructive" onClick={onDelete}>
+                                <Trash size={16} />
+                                <span className="sr-only">Delete</span>
+                            </Button>
                         </div>
+                    </div>
 
-                        <Separator />
+                    <Separator />
 
-                        <CardContent className="p-2">
-                            <ChartContainer config={{ value: { label: "value", color: color } }}>
+                    <CardContent className="p-2">
+                        {
+                            isLoading ? (
+                                <ChartContainer config={{ value: { label: "value", color: color } }}>
+                                    <Skeleton className="w-full h-full" />
+                                </ChartContainer>
+                            ) : error ? (
+                                < ChartContainer config={{ value: { label: "value", color: color } }}>
+                                    <div className="p-4 text-center w-full h-full flex flex-col items-center justify-center gap-3">
+                                        <span className="text-red-600">{error}</span>
+                                        {isFailedToLoadData && <><TooltipProvider>
+                                            <Tooltip>
+                                                <TooltipTrigger><RotateCw size={16} onClick={handleRetry} /></TooltipTrigger>
+                                                <TooltipContent>
+                                                    <p>Retry</p>
+                                                </TooltipContent>
+                                            </Tooltip>
+                                        </TooltipProvider>
+                                        </>}
+                                    </div>
+                                </ChartContainer>
+
+                            ) : (< ChartContainer config={{ value: { label: "value", color: color } }}>
                                 {chartType === "line" ? (
                                     <LineChart
                                         accessibilityLayer
@@ -231,18 +260,20 @@ const ChartDisplayCard: React.FC<ChartDisplayCardProps> = ({ chart }) => {
                                         />
                                     </BarChart>
                                 )}
-                            </ChartContainer>
-                        </CardContent>
+                            </ChartContainer>)
 
-                        <CardFooter className="flex-col items-center gap-2 text-sm">
-                            <h4>{title}</h4>
-                        </CardFooter>
-                    </>
-                )}
-            </Card>
+                        }
+                    </CardContent>
+
+                    <CardFooter className="flex-col items-center gap-2 text-sm">
+                        <h4>{title}</h4>
+                    </CardFooter>
+                </>
+
+            </Card >
 
             {/* Chart Configuration Dialog */}
-            <ChartConfigDialog
+            < ChartConfigDialog
                 onSubmit={editChart}
                 isFormOpen={isFormOpen}
                 setIsFormOpen={setIsFormOpen}
