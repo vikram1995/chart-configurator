@@ -6,7 +6,7 @@ import {
 } from "react-query"; // React Query hooks
 import axios from "axios";
 import API_ENDPOINTS from "@/config/urlConfig";
-import { ChartConfig } from "@/chartConfigSchema";
+import { ChartConfig } from "@/schema/chartConfigSchema";
 import { useToast } from "./use-toast";
 import { calculateDateRange } from "@/lib/utils";
 

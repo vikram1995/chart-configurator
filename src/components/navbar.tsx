@@ -1,4 +1,4 @@
-import { ChartConfig } from "@/chartConfigSchema";
+import { ChartConfig } from "@/schema/chartConfigSchema";
 import { ChartConfigDialog } from "./chartConfigDialog";
 import { useState } from "react";
 import { Button } from "./ui/button";

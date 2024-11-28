@@ -10,7 +10,7 @@ import {
     ChartTooltip,
     ChartTooltipContent,
 } from "@/components/ui/chart";
-import { ChartConfig } from "@/chartConfigSchema";
+import { ChartConfig } from "@/schema/chartConfigSchema";
 import { ChartConfigDialog } from "./chartConfigDialog";
 import { Skeleton } from "./ui/skeleton";
 import {

@@ -4,7 +4,7 @@ import axios from "axios";
 import { useQueryClient } from "react-query";
 
 import InfiniteScrollSelect from "./ui/infiniteScrollSelect";
-import { dataSourceT } from "@/chartConfigSchema";
+import { dataSourceT } from "@/schema/chartConfigSchema";
 import API_ENDPOINTS from "@/config/urlConfig";
 const FRED_API_KEY = import.meta.env.VITE_FRED_API_KEY;
 
