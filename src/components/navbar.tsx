@@ -1,44 +1,16 @@
 import { ChartConfig } from "@/chartConfigSchema";
 import { ChartConfigDialog } from "./chartConfigDialog";
 import { useState } from "react";
-import axios from "axios";
-import API_ENDPOINTS from "@/config/urlConfig";
 import { Button } from "./ui/button";
-import { useChartStore } from "@/stores";
 import { Plus } from 'lucide-react';
-import { useToast } from "@/hooks/use-toast";
+import { useAddChartMutation } from "@/hooks/queryHooks";
 
 const Navbar = () => {
     const [isFormOpen, setIsFormOpen] = useState(false);
-    const { setChartList } = useChartStore()
-    const { toast } = useToast()
+    const { mutate: addChartMutation } = useAddChartMutation();
+
     const saveChart = async (chart: ChartConfig) => {
-        try {
-            // Make a POST request to the backend
-            const response = await axios.post(API_ENDPOINTS.charts.create, chart, {
-                headers: {
-                    "Content-Type": "application/json",
-                },
-            });
-            if (response?.status === 200) {
-                setChartList(response?.data?.charts)
-                toast({
-                    title: "Chart added successfully!",
-                })
-            }
-            else {
-                throw Error("Failed to add the chart")
-            }
-
-
-        } catch (error: any) {
-            // Handle errors gracefully
-            console.error("Error saving chart:", error.response?.data || error.message);
-            toast({
-                variant: "destructive",
-                title: "Failed to add the chart"
-            })
-        }
+        addChartMutation(chart)
         setIsFormOpen(false);
     };
 

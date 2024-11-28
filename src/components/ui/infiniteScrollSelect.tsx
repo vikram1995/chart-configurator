@@ -7,7 +7,7 @@ const InfiniteScrollSelect = ({ loadOptions, value, onChange, placeHolder }) => 
         <AsyncPaginate
             value={value}
             loadOptions={loadOptions}
-            debounceTimeout={300}
+            debounceTimeout={500}
             onChange={onChange}
             additional={{
                 page: 1,

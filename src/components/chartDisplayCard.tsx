@@ -1,5 +1,4 @@
-import React, { useEffect, useState } from "react";
-import axios from "axios";
+import React, { useState } from "react";
 import { Card, CardContent, CardFooter } from "@/components/ui/card";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
@@ -12,11 +11,7 @@ import {
     ChartTooltipContent,
 } from "@/components/ui/chart";
 import { ChartConfig } from "@/chartConfigSchema";
-import API_ENDPOINTS from "@/config/urlConfig";
-import { calculateDateRange } from "@/lib/utils";
 import { ChartConfigDialog } from "./chartConfigDialog";
-import { useChartStore } from "@/stores";
-import { useToast } from "@/hooks/use-toast";
 import { Skeleton } from "./ui/skeleton";
 import {
     Tooltip,
@@ -24,9 +19,7 @@ import {
     TooltipProvider,
     TooltipTrigger,
 } from "@/components/ui/tooltip"
-
-const FRED_API_KEY = import.meta.env.VITE_FRED_API_KEY;
-
+import { useChartData, useDeleteChartMutation, useUpdateChartMutation } from "@/hooks/queryHooks";
 interface ChartDisplayCardProps {
     chart: ChartConfig;
 }
@@ -34,16 +27,19 @@ interface ChartDisplayCardProps {
 const ChartDisplayCard: React.FC<ChartDisplayCardProps> = ({ chart }) => {
     const { title, type, yLabel, timeFrequency, lineStyle, dataSource, color, barStyle, id } = chart;
 
-    const { toast } = useToast()
-    const [chartData, setChartData] = useState<any[]>([]);
-    const [isLoading, setIsLoading] = useState<boolean>(true);
-    const [isFailedToLoadData, setIsFailedToLoadData] = useState<boolean>(true);
-    const [error, setError] = useState<string | null>(null);
     const [frequency, setFrequency] = useState<string>(timeFrequency || "1m");
     const [chartType, setChartType] = useState<string>(type || "line");
     const [isFormOpen, setIsFormOpen] = useState<boolean>(false);
+    const { mutate: deleteChartMutation } = useDeleteChartMutation();
 
-    const { setChartList } = useChartStore();
+    const updateChartMutation = useUpdateChartMutation();
+    const {
+        data: chartData,
+        isLoading,
+        isError,
+        error,
+        refetch
+    } = useChartData(dataSource?.value, frequency);
 
     const strokeDasharray = lineStyle === "dashed" ? "5 5" : lineStyle === "dotted" ? "2 2" : undefined;
     const barSize = barStyle === "thin" ? 10 : barStyle === "medium" ? 20 : barStyle === "thick" ? 30 : 20;
@@ -53,22 +49,7 @@ const ChartDisplayCard: React.FC<ChartDisplayCardProps> = ({ chart }) => {
     };
 
     const onDelete = async () => {
-        try {
-            const response = await axios.delete(API_ENDPOINTS.charts.update(id));
-            if (response?.status === 200) {
-                toast({
-                    title: "Chart deleted successfully!"
-                })
-                setChartList(response.data.charts);
-            }
-            else {
-                setError("Failed to delete chart.");
-            }
-
-        } catch (error) {
-            console.error("Error deleting chart:", error);
-            setError("Failed to delete chart.");
-        }
+        deleteChartMutation(id)
     };
 
     const onEditClickHandler = () => {
@@ -76,79 +57,13 @@ const ChartDisplayCard: React.FC<ChartDisplayCardProps> = ({ chart }) => {
     };
 
     const editChart = async (updatedChart: ChartConfig) => {
-        try {
-            const response = await axios.put(API_ENDPOINTS.charts.update(id), updatedChart, {
-                headers: {
-                    "Content-Type": "application/json",
-                },
-            });
-            if (response?.status === 200) {
-                setChartList(response.data.charts);
-                toast({
-                    title: "Chart updated successfully!"
-                })
-            } else {
-                setError("Failed to update the chart");
-            }
-
-        } catch (error: any) {
-            console.error("Error saving chart:", error.response?.data || error.message);
-            setError("Failed to save chart");
-        }
+        updateChartMutation.mutate({ id, updatedChart })
         setIsFormOpen(false);
-    };
-
-    const getChartData = async () => {
-        const { startDate, endDate } = calculateDateRange(frequency);
-        setIsLoading(true);
-        setError(null);
-
-        try {
-            const response = await axios.get(API_ENDPOINTS.dataSource.observations, {
-                params: {
-                    series_id: dataSource?.value,
-                    api_key: FRED_API_KEY,
-                    observation_start: startDate,
-                    observation_end: endDate,
-                    file_type: "json",
-                },
-            });
-
-            const observations = response?.data?.observations || [];
-            setChartData(observations);
-            setIsFailedToLoadData(false)
-            if (observations.length === 0) {
-                setError("No data available.");
-            }
-        } catch (err) {
-            console.error("Error fetching chart data:", err);
-            setError("Failed to load chart data. Please try again.");
-            setIsFailedToLoadData(true)
-        } finally {
-            setIsLoading(false);
-        }
     };
 
     const handleTimeRangeChange = (range: string) => {
         setFrequency(range);
     };
-
-    const handleRetry = () => {
-        getChartData()
-    }
-
-    useEffect(() => {
-        getChartData();
-    }, [frequency, dataSource?.value]);
-
-    useEffect(() => {
-        if (error) {
-            toast({
-                variant: "destructive",
-                title: error
-            })
-        }
-    }, [error])
 
     return (
         <>
@@ -190,28 +105,35 @@ const ChartDisplayCard: React.FC<ChartDisplayCardProps> = ({ chart }) => {
                     <Separator />
 
                     <CardContent className="p-2">
-                        {
-                            isLoading ? (
-                                <ChartContainer config={{ value: { label: "value", color: color } }}>
-                                    <Skeleton className="w-full h-full" />
-                                </ChartContainer>
-                            ) : error ? (
-                                < ChartContainer config={{ value: { label: "value", color: color } }}>
-                                    <div className="p-4 text-center w-full h-full flex flex-col items-center justify-center gap-3">
-                                        <span className="text-red-600">{error}</span>
-                                        {isFailedToLoadData && <><TooltipProvider>
-                                            <Tooltip>
-                                                <TooltipTrigger><RotateCw size={16} onClick={handleRetry} /></TooltipTrigger>
-                                                <TooltipContent>
-                                                    <p>Retry</p>
-                                                </TooltipContent>
-                                            </Tooltip>
-                                        </TooltipProvider>
-                                        </>}
-                                    </div>
-                                </ChartContainer>
 
-                            ) : (< ChartContainer config={{ value: { label: "value", color: color } }}>
+                        {isLoading && <ChartContainer config={{ value: { label: "value", color: color } }}>
+                            <Skeleton className="w-full h-full" />
+                        </ChartContainer>}
+                        {isError && < ChartContainer config={{ value: { label: "value", color: color } }}>
+                            <div className="p-4 text-center w-full h-full flex flex-col items-center justify-center gap-3">
+                                <span className="text-red-600">Failed to load chart data, please try again</span>
+                                <TooltipProvider>
+                                    <Tooltip>
+                                        <TooltipTrigger><RotateCw size={16} onClick={refetch} /></TooltipTrigger>
+                                        <TooltipContent>
+                                            <p>Retry</p>
+                                        </TooltipContent>
+                                    </Tooltip>
+                                </TooltipProvider>
+                            </div>
+                        </ChartContainer>}
+                        {!isLoading && chartData && chartData.length === 0 && (
+                            <ChartContainer config={{ value: { label: "value", color: color } }}>
+                                <div className="p-4 text-center w-full h-full flex flex-col items-center justify-center gap-3">
+                                    <span className="text-red-600">No data available for the selected date range.</span>
+                                </div>
+
+                            </ChartContainer>
+
+                        )}
+
+                        {chartData && chartData.length > 0 && (
+                            < ChartContainer config={{ value: { label: "value", color: color } }}>
                                 {chartType === "line" ? (
                                     <LineChart
                                         accessibilityLayer
@@ -260,9 +182,9 @@ const ChartDisplayCard: React.FC<ChartDisplayCardProps> = ({ chart }) => {
                                         />
                                     </BarChart>
                                 )}
-                            </ChartContainer>)
+                            </ChartContainer>
+                        )}
 
-                        }
                     </CardContent>
 
                     <CardFooter className="flex-col items-center gap-2 text-sm">
