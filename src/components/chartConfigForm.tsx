@@ -25,6 +25,30 @@ interface ChartConfigFormProps {
     onSubmit: (data: ChartConfig) => void;
 }
 
+const chartTypeDisplayMap: { [key in "line" | "bar"]: string } = {
+    line: "Line",
+    bar: "Bar"
+}
+
+const lineStyleDisplayMap: { [key in "solid" | "dashed" | "dotted"]: string } = {
+    solid: "Solid",
+    dashed: "Dashed",
+    dotted: "Dotted",
+};
+
+const barStyleDisplayMap: { [key in "thin" | "medium" | "thick"]: string } = {
+    thin: "Thin",
+    medium: "Medium",
+    thick: "Thick",
+};
+
+const timeFrequencyDisplayMap: { [key in "1d" | "1w" | "1m" | "1y"]: string } = {
+    "1d": "Day",
+    "1w": "Week",
+    "1m": "Month",
+    "1y": "Year",
+};
+
 const ChartConfigForm: React.FC<ChartConfigFormProps> = ({
     defaultValues,
     onSubmit,
@@ -102,7 +126,7 @@ const ChartConfigForm: React.FC<ChartConfigFormProps> = ({
                                         field.onChange(value as "line" | "bar")
                                     }
                                 >
-                                    <SelectTrigger>{field.value}</SelectTrigger>
+                                    <SelectTrigger>{chartTypeDisplayMap[field.value]}</SelectTrigger>
                                     <SelectContent>
                                         <SelectItem value="line">Line</SelectItem>
                                         <SelectItem value="bar">Bar</SelectItem>
@@ -128,7 +152,7 @@ const ChartConfigForm: React.FC<ChartConfigFormProps> = ({
                                         value={field.value}
                                         onValueChange={(value) => field.onChange(value)}
                                     >
-                                        <SelectTrigger>{field.value || "Select Line Style"}</SelectTrigger>
+                                        <SelectTrigger>{lineStyleDisplayMap[field.value] || "Select Line Style"}</SelectTrigger>
                                         <SelectContent>
                                             <SelectItem value="solid">Solid</SelectItem>
                                             <SelectItem value="dashed">Dashed</SelectItem>
@@ -155,7 +179,7 @@ const ChartConfigForm: React.FC<ChartConfigFormProps> = ({
                                         value={field.value}
                                         onValueChange={(value) => field.onChange(value)}
                                     >
-                                        <SelectTrigger>{field.value || "Select Bar Style"}</SelectTrigger>
+                                        <SelectTrigger>{barStyleDisplayMap[field.value] || "Select Bar Style"}</SelectTrigger>
                                         <SelectContent>
                                             <SelectItem value="thin">Thin</SelectItem>
                                             <SelectItem value="medium">Medium</SelectItem>
@@ -185,7 +209,7 @@ const ChartConfigForm: React.FC<ChartConfigFormProps> = ({
                                         )
                                     }
                                 >
-                                    <SelectTrigger>{field.value}</SelectTrigger>
+                                    <SelectTrigger>{timeFrequencyDisplayMap[field.value] || "Select Time Frequency"}</SelectTrigger>
                                     <SelectContent>
                                         <SelectItem value="1d">Day</SelectItem>
                                         <SelectItem value="1w">Week</SelectItem>

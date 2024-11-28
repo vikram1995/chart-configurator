@@ -1,4 +1,9 @@
-import { useQuery, useMutation, useQueryClient } from "react-query"; // React Query hooks
+import {
+  useQuery,
+  useMutation,
+  useQueryClient,
+  useInfiniteQuery,
+} from "react-query"; // React Query hooks
 import axios from "axios";
 import API_ENDPOINTS from "@/config/urlConfig";
 import { ChartConfig } from "@/chartConfigSchema";
@@ -34,9 +39,7 @@ export const useAddChartMutation = () => {
       toast({
         title: "Chart added successfully!",
       });
-
-      // Update the local chart list in the cache
-      queryClient.setQueryData("charts", charts); // Assuming the query key is "charts"
+      queryClient.invalidateQueries("charts");
     },
     // On Error
     onError: (error: any) => {
@@ -58,11 +61,6 @@ const updateChart = async ({
   updatedChart: ChartConfig;
 }) => {
   await axios.put(API_ENDPOINTS.charts.update(id), updatedChart);
-};
-
-// Custom Hooks
-export const useChartsQuery = () => {
-  return useQuery("charts", fetchCharts); // 'charts' is the query key
 };
 
 export const useUpdateChartMutation = () => {
@@ -135,6 +133,24 @@ export const useChartData = (seriesId: string, frequency: string) => {
         }
       },
       retry: false, // Optionally disable retries if you don't want the query to retry on failure
+    }
+  );
+};
+
+export const useChartsQuery = () => {
+  return useInfiniteQuery(
+    ["charts"],
+    async ({ pageParam = 1 }) => {
+      console.log("pageParam", pageParam);
+      const response = await axios.get(API_ENDPOINTS.charts.getAll, {
+        params: { page: pageParam, limit: 10 },
+      });
+      return response.data;
+    },
+    {
+      getNextPageParam: (lastPage) => {
+        return lastPage.hasMore ? lastPage.currentPage + 1 : undefined;
+      },
     }
   );
 };
