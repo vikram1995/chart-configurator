@@ -37,7 +37,6 @@ const ChartDisplayCard: React.FC<ChartDisplayCardProps> = ({ chart }) => {
         data: chartData,
         isLoading,
         isError,
-        error,
         refetch
     } = useChartData(dataSource?.value, frequency);
 
@@ -122,7 +121,7 @@ const ChartDisplayCard: React.FC<ChartDisplayCardProps> = ({ chart }) => {
                                 </TooltipProvider>
                             </div>
                         </ChartContainer>}
-                        {!isLoading && chartData && chartData.length === 0 && (
+                        {!isLoading && !isError && chartData && chartData.length === 0 && (
                             <ChartContainer config={{ value: { label: "value", color: color } }}>
                                 <div className="p-4 text-center w-full h-full flex flex-col items-center justify-center gap-3">
                                     <span className="text-red-600">No data available for the selected date range.</span>

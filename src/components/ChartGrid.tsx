@@ -1,9 +1,9 @@
 import React from 'react';
 import InfiniteScroll from 'react-infinite-scroll-component';
-import GraphSkeleton from './graphSkeleton';
 import ChartDisplayCard from './chartDisplayCard';
 import { useChartsQuery } from '@/hooks/queryHooks';
-import GraphLoaderSkeleton from './graphLoaderSkeleton';
+import GraphLoaderSkeleton from './skeletonLoader/graphLoaderSkeleton';
+import GraphSkeleton from './skeletonLoader/graphSkeleton';
 
 const ChartGrid: React.FC = () => {
     const {

@@ -1,4 +1,3 @@
-import React from 'react'
 import GraphSkeleton from './graphSkeleton'
 
 function GraphLoaderSkeleton() {
