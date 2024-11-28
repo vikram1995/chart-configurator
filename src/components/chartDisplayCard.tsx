@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Card, CardContent, CardFooter } from "@/components/ui/card";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
@@ -26,7 +26,6 @@ interface ChartDisplayCardProps {
 
 const ChartDisplayCard: React.FC<ChartDisplayCardProps> = ({ chart }) => {
     const { title, type, yLabel, timeFrequency, lineStyle, dataSource, color, barStyle, id } = chart;
-
     const [frequency, setFrequency] = useState<string>(timeFrequency || "1m");
     const [chartType, setChartType] = useState<string>(type || "line");
     const [isFormOpen, setIsFormOpen] = useState<boolean>(false);
@@ -60,6 +59,12 @@ const ChartDisplayCard: React.FC<ChartDisplayCardProps> = ({ chart }) => {
         setIsFormOpen(false);
     };
 
+    useEffect(() => {
+        if (timeFrequency) {
+            setFrequency(timeFrequency)
+        }
+    }, [timeFrequency])
+
     const handleTimeRangeChange = (range: string) => {
         setFrequency(range);
     };
@@ -79,7 +84,7 @@ const ChartDisplayCard: React.FC<ChartDisplayCardProps> = ({ chart }) => {
                         </Tabs>
 
                         {/* Time Frequency Tabs */}
-                        <Tabs defaultValue={frequency} onValueChange={handleTimeRangeChange} className="flex">
+                        <Tabs defaultValue={frequency} onValueChange={handleTimeRangeChange} className="flex" value={frequency}>
                             <TabsList>
                                 <TabsTrigger value="1d">1D</TabsTrigger>
                                 <TabsTrigger value="1w">1W</TabsTrigger>

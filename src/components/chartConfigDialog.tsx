@@ -5,6 +5,7 @@ import {
     DialogContent,
     DialogHeader,
     DialogTitle,
+    DialogDescription
 } from "@/components/ui/dialog"
 import {
     Drawer,
@@ -24,13 +25,17 @@ import { Breakpoints } from '@/constants'
 export function ChartConfigDialog({ onSubmit, isFormOpen, setIsFormOpen, defaultValues }) {
 
     const isDesktop = useMediaQuery(Breakpoints.Desktop)
+    const isEdit = defaultValues ? true : false
 
     if (isDesktop) {
         return (
             <Dialog open={isFormOpen} onOpenChange={setIsFormOpen}>
                 <DialogContent className="sm:max-w-[425px]">
                     <DialogHeader>
-                        <DialogTitle>Add Chart</DialogTitle>
+                        <DialogTitle>{isEdit ? "Edit Chart" : "Add Chart"}</DialogTitle>
+                        <DialogDescription>
+                            Configure the chart settings
+                        </DialogDescription>
 
                     </DialogHeader>
                     <ChartConfigForm
