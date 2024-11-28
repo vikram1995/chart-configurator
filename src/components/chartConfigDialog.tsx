@@ -1,13 +1,12 @@
-import { useMediaQuery } from 'usehooks-ts'
-import { useState } from 'react'
-import { Button } from "@/components/ui/button"
+import { useMediaQuery } from "usehooks-ts";
+import { Button } from "@/components/ui/button";
 import {
     Dialog,
     DialogContent,
     DialogHeader,
     DialogTitle,
-    DialogTrigger,
-} from "@/components/ui/dialog"
+    DialogDescription,
+} from "@/components/ui/dialog";
 import {
     Drawer,
     DrawerClose,
@@ -15,66 +14,45 @@ import {
     DrawerFooter,
     DrawerHeader,
     DrawerTitle,
-    DrawerTrigger,
-} from "@/components/ui/drawer"
+} from "@/components/ui/drawer";
+import ChartConfigForm from "./chartConfigForm";
+import { Breakpoints } from "@/constants";
+import { ChartConfig } from "@/schema/chartConfigSchema";
 
-import ChartConfigForm from "./chartConfigForm"
-import { ChartConfig } from '@/chartConfigSchema'
-import { Breakpoints } from '@/constants'
+interface ChartConfigDialogProps {
+    onSubmit: (chart: ChartConfig) => void;
+    isFormOpen: boolean;
+    setIsFormOpen: (isOpen: boolean) => void;
+    defaultValues: ChartConfig | null;
+}
 
+export const ChartConfigDialog: React.FC<ChartConfigDialogProps> = ({
+    onSubmit,
+    isFormOpen,
+    setIsFormOpen,
+    defaultValues,
+}) => {
+    const isDesktop = useMediaQuery(Breakpoints.Desktop);
+    const isEdit = Boolean(defaultValues);
 
-export function ChartConfigDialog() {
-    const [charts, setCharts] = useState<ChartConfig[]>([]);
-    const [isFormOpen, setIsFormOpen] = useState(false);
-    const [editingChart, setEditingChart] = useState<ChartConfig | null>(null);
-    const isDesktop = useMediaQuery(Breakpoints.Desktop)
-
-    const saveChart = (chart: ChartConfig) => {
-        console.log(chart)
-        if (chart.title && editingChart) {
-            // Edit existing chart
-            setCharts((prev) => prev.map((c) => (c.title === editingChart.title ? chart : c)));
-        } else {
-            // Add new chart
-            setCharts((prev) => [...prev, { ...chart, id: Date.now() }]);
-        }
-        setIsFormOpen(false);
-    };
-
-    if (isDesktop) {
-        return (
-            <Dialog open={isFormOpen} onOpenChange={setIsFormOpen}>
-                <DialogTrigger asChild>
-                    <Button>Add Chart</Button>
-                </DialogTrigger>
-                <DialogContent className="sm:max-w-[425px]">
-                    <DialogHeader>
-                        <DialogTitle>Add Chart</DialogTitle>
-
-                    </DialogHeader>
-                    <ChartConfigForm
-                        defaultValues={editingChart || undefined}
-                        onSubmit={saveChart}
-                    />
-                </DialogContent>
-            </Dialog>
-        )
-    }
-
-    return (
+    return isDesktop ? (
+        <Dialog open={isFormOpen} onOpenChange={setIsFormOpen}>
+            <DialogContent className="sm:max-w-[425px]">
+                <DialogHeader>
+                    <DialogTitle>{isEdit ? "Edit Chart" : "Add Chart"}</DialogTitle>
+                    <DialogDescription>Configure the chart settings</DialogDescription>
+                </DialogHeader>
+                <ChartConfigForm defaultValues={defaultValues} onSubmit={onSubmit} />
+            </DialogContent>
+        </Dialog>
+    ) : (
         <Drawer open={isFormOpen} onOpenChange={setIsFormOpen}>
-            <DrawerTrigger asChild>
-                <Button>Add Chart</Button>
-            </DrawerTrigger>
             <DrawerContent>
                 <DrawerHeader className="text-left">
-                    <DrawerTitle>Add Chart</DrawerTitle>
+                    <DrawerTitle>{isEdit ? "Edit Chart" : "Add Chart"}</DrawerTitle>
                 </DrawerHeader>
                 <div className="px-4">
-                    <ChartConfigForm
-                        defaultValues={editingChart || undefined}
-                        onSubmit={saveChart}
-                    />
+                    <ChartConfigForm defaultValues={defaultValues} onSubmit={onSubmit} />
                 </div>
                 <DrawerFooter className="pt-2">
                     <DrawerClose asChild>
@@ -83,6 +61,5 @@ export function ChartConfigDialog() {
                 </DrawerFooter>
             </DrawerContent>
         </Drawer>
-    )
-}
-
+    );
+};

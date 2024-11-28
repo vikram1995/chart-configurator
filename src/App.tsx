@@ -1,16 +1,19 @@
-import { useState } from 'react'
-import { Button } from "@/components/ui/button"
 import Navbar from './components/navbar'
-
+import { Toaster } from "@/components/ui/toaster"
+import { QueryClient, QueryClientProvider } from "react-query";
 import './App.css'
+import ChartGrid from './components/ChartGrid'
+
+const queryClient = new QueryClient();
 
 function App() {
-  const [count, setCount] = useState(0)
 
   return (
-    <>
+    <QueryClientProvider client={queryClient}>
       <Navbar />
-    </>
+      <ChartGrid />
+      <Toaster />
+    </QueryClientProvider>
   )
 }
 
