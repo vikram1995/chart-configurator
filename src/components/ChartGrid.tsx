@@ -20,6 +20,11 @@ const ChartGrid: React.FC = () => {
 
     const charts = data?.pages?.flatMap((page) => page.charts) || [];
 
+
+    if (charts?.length === 0) {
+        return <div className='flex flex-col justify-center h-[90vh] items-center'><span className="font-bold">Click "Add Chart" to create a new chart</span></div>
+    }
+
     return (
         <div className="p-4">
             <InfiniteScroll

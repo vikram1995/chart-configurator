@@ -2,21 +2,23 @@ import { ChartConfig } from "@/schema/chartConfigSchema";
 import { ChartConfigDialog } from "./chartConfigDialog";
 import { useState } from "react";
 import { Button } from "./ui/button";
-import { Plus } from 'lucide-react';
+import { Plus } from "lucide-react";
 import { useAddChartMutation } from "@/hooks/queryHooks";
 
-const Navbar = () => {
-    const [isFormOpen, setIsFormOpen] = useState(false);
+const Navbar: React.FC = () => {
+    const [isFormOpen, setIsFormOpen] = useState<boolean>(false); // State for dialog visibility
     const { mutate: addChartMutation } = useAddChartMutation();
 
-    const saveChart = async (chart: ChartConfig) => {
-        addChartMutation(chart)
+    // Function to handle saving the chart
+    const saveChart = async (chart: ChartConfig): Promise<void> => {
+        addChartMutation(chart);
         setIsFormOpen(false);
     };
 
-    const openDialog = () => {
-        setIsFormOpen(true)
-    }
+    // Function to handle dialog open
+    const openDialog = (): void => {
+        setIsFormOpen(true);
+    };
 
     return (
         <>
@@ -27,11 +29,17 @@ const Navbar = () => {
                         <span className="ml-2 text-xl font-semibold">Dashboard</span>
                     </div>
                     {/* Add Button */}
-                    <Button onClick={openDialog}><Plus />Add Chart</Button>
-                    <ChartConfigDialog onSubmit={saveChart} isFormOpen={isFormOpen} setIsFormOpen={setIsFormOpen} defaultValues={null} />
+                    <Button onClick={openDialog}>
+                        <Plus /> Add Chart
+                    </Button>
+                    <ChartConfigDialog
+                        onSubmit={saveChart}
+                        isFormOpen={isFormOpen}
+                        setIsFormOpen={setIsFormOpen}
+                        defaultValues={null}
+                    />
                 </div>
             </nav>
-
         </>
     );
 };
